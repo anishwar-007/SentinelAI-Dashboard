@@ -1,27 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ExecutionStatusBadge } from "@/components/executions/status-badge";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { CopyButton } from "@/components/shared/copy-button";
-import { TraceTree } from "@/components/traces/trace-tree";
-import { TraceWaterfall } from "@/components/traces/trace-waterfall";
-import { SpanInspector } from "@/components/traces/span-inspector";
+import { TraceExplorer } from "@/components/traces/trace-explorer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExecution } from "@/hooks/use-execution";
 import { useExecutionTrace } from "@/hooks/use-execution-trace";
 import { PlatformApiError } from "@/lib/api/client";
 import { formatDateTime, formatLatency } from "@/lib/utils";
-import type { SpanView } from "@/types/trace";
 import { VerificationSection } from "@/components/executions/verification-section";
 import { AnalysisSection } from "@/components/executions/analysis-section";
 
 export function ExecutionDetailView({ executionId }: { executionId: string }) {
   const execution = useExecution(executionId);
   const trace = useExecutionTrace(executionId);
-  const [selected, setSelected] = useState<SpanView | null>(null);
 
   const snapshot = execution.data;
   const executionName =
@@ -198,43 +194,12 @@ export function ExecutionDetailView({ executionId }: { executionId: string }) {
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Trace
         </h3>
-        {trace.isLoading ? (
-          <Skeleton className="h-48 w-full" />
-        ) : trace.isError ? (
-          <ErrorState
-            error={trace.error}
-            title={
-              trace.error instanceof PlatformApiError &&
-              trace.error.status === 404
-                ? "Trace not found"
-                : "Failed to load trace"
-            }
-          />
-        ) : trace.data ? (
-          <>
-            <TraceTree
-              spans={trace.data.spans}
-              selectedId={selected?.span_id}
-              onSelect={setSelected}
-            />
-            <TraceWaterfall
-              trace={trace.data}
-              selectedId={selected?.span_id}
-              onSelect={setSelected}
-            />
-          </>
-        ) : (
-          <EmptyState title="No trace exists for this execution" />
-        )}
+        <TraceExplorer
+          trace={trace.data}
+          isLoading={trace.isLoading}
+          error={trace.error}
+        />
       </section>
-
-      <SpanInspector
-        span={selected}
-        open={Boolean(selected)}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null);
-        }}
-      />
     </div>
   );
 }

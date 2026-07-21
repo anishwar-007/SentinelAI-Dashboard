@@ -6,5 +6,7 @@ export function getExecutionTrace(
 ): Promise<ExecutionTraceView> {
   return apiGet<ExecutionTraceView>(
     `/api/v1/executions/${encodeURIComponent(executionId)}/trace`,
+    undefined,
+    "required",
   );
 }

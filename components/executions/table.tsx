@@ -10,10 +10,12 @@ export function ExecutionsTable({
   items,
   emptyTitle = "No executions yet",
   emptyDescription = "When the Platform persists executions, they will appear here.",
+  detailBasePath = "/dashboard/executions",
 }: {
   items: ExecutionListItem[];
   emptyTitle?: string;
   emptyDescription?: string;
+  detailBasePath?: string;
 }) {
   if (items.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
@@ -41,7 +43,7 @@ export function ExecutionsTable({
             >
               <td className="px-3 py-2">
                 <Link
-                  href={`/executions/${item.execution_id}`}
+                  href={`${detailBasePath}/${item.execution_id}`}
                   className="block hover:underline"
                 >
                   <div className="font-medium text-foreground">

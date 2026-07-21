@@ -71,7 +71,7 @@ function ExecutionsExplorerBody() {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("offset", String(Math.max(0, next)));
     nextParams.set("limit", String(limit));
-    router.push(`/executions?${nextParams.toString()}`);
+    router.push(`/dashboard/executions?${nextParams.toString()}`);
   };
 
   return (

@@ -84,7 +84,7 @@ export default function OverviewPage() {
                   Recent latencies (same window)
                 </h2>
                 <Link
-                  href="/executions"
+                  href="/dashboard/executions"
                   className="text-xs text-sky-400 hover:underline"
                 >
                   Open explorer

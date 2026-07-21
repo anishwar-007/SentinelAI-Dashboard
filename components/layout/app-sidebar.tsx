@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const PRIMARY = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/executions", label: "Executions", icon: Activity },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/executions", label: "Executions", icon: Activity },
 ];
 
 const COMING_SOON = [
@@ -64,7 +64,11 @@ export function AppSidebar() {
   const content = (
     <div className="flex h-full flex-col">
       <div className="flex h-12 items-center border-b border-border px-4">
-        <Link href="/" className="flex items-baseline gap-1.5" onClick={() => setOpen(false)}>
+        <Link
+          href="/dashboard"
+          className="flex items-baseline gap-1.5"
+          onClick={() => setOpen(false)}
+        >
           <span className="text-sm font-semibold tracking-tight text-foreground">
             SentinelAI
           </span>
@@ -81,8 +85,8 @@ export function AppSidebar() {
               key={item.href}
               {...item}
               active={
-                item.href === "/"
-                  ? pathname === "/"
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
                   : pathname.startsWith(item.href)
               }
               onClick={() => setOpen(false)}

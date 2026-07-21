@@ -37,7 +37,7 @@ export function ExecutionFilters() {
       if (value) params.set(key, value);
     }
     params.set("offset", "0");
-    router.push(`/executions?${params.toString()}`);
+    router.push(`/dashboard/executions?${params.toString()}`);
   }, [draft, router]);
 
   const reset = useCallback(() => {
@@ -49,7 +49,7 @@ export function ExecutionFilters() {
       to_time: "",
       limit: "50",
     });
-    router.push("/executions");
+    router.push("/dashboard/executions");
   }, [router]);
 
   return (
