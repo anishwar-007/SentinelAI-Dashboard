@@ -7,6 +7,7 @@ import { SpanInspector } from "@/components/traces/span-inspector";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
+import { ClientOnly } from "@/components/shared/client-only";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PlatformApiError } from "@/lib/api/client";
@@ -70,11 +71,13 @@ export function TraceExplorer({
       </div>
 
       {tab === "graph" ? (
-        <TraceGraph
-          spans={trace.spans}
-          selectedId={selected?.span_id}
-          onSelect={setSelected}
-        />
+        <ClientOnly fallback={<Skeleton className="h-[420px] w-full" />}>
+          <TraceGraph
+            spans={trace.spans}
+            selectedId={selected?.span_id}
+            onSelect={setSelected}
+          />
+        </ClientOnly>
       ) : null}
       {tab === "waterfall" ? (
         <TraceWaterfall
