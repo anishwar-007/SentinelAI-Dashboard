@@ -12,6 +12,7 @@ import {
 import { TopBar } from "@/components/layout/top-bar";
 import { ExecutionsTable } from "@/components/executions/table";
 import { ErrorState } from "@/components/shared/error-state";
+import { ClientOnly } from "@/components/shared/client-only";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExecutions } from "@/hooks/use-executions";
 import { formatLatency } from "@/lib/utils";
@@ -94,30 +95,35 @@ export default function OverviewPage() {
                 {chartData.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No data yet.</p>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <XAxis dataKey="idx" hide />
-                      <YAxis
-                        width={40}
-                        tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: "var(--card)",
-                          border: "1px solid var(--border)",
-                          fontSize: 12,
-                        }}
-                        formatter={(value) => [
-                          formatLatency(Number(value)),
-                          "latency",
-                        ]}
-                        labelFormatter={(_, payload) =>
-                          String(payload?.[0]?.payload?.name ?? "")
-                        }
-                      />
-                      <Bar dataKey="latency" fill="#38bdf8" radius={2} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <ClientOnly fallback={<Skeleton className="h-full w-full" />}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <XAxis dataKey="idx" hide />
+                        <YAxis
+                          width={40}
+                          tick={{
+                            fill: "var(--muted-foreground)",
+                            fontSize: 10,
+                          }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "var(--card)",
+                            border: "1px solid var(--border)",
+                            fontSize: 12,
+                          }}
+                          formatter={(value) => [
+                            formatLatency(Number(value)),
+                            "latency",
+                          ]}
+                          labelFormatter={(_, payload) =>
+                            String(payload?.[0]?.payload?.name ?? "")
+                          }
+                        />
+                        <Bar dataKey="latency" fill="#38bdf8" radius={2} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ClientOnly>
                 )}
               </div>
             </section>

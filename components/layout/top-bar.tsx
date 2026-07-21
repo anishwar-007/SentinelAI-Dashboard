@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlatformStatus } from "@/components/layout/platform-status";
 import { getApiHostLabel } from "@/lib/api/client";
@@ -14,6 +15,9 @@ export function TopBar({
   breadcrumb?: string;
 }) {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   let host = "unconfigured";
   try {
     host = getApiHostLabel();
@@ -43,6 +47,7 @@ export function TopBar({
           size="icon"
           className="relative"
           aria-label="Toggle theme"
+          disabled={!mounted}
           onClick={() =>
             setTheme(resolvedTheme === "dark" ? "light" : "dark")
           }
