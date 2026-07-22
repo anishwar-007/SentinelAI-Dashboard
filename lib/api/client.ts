@@ -60,7 +60,7 @@ async function parseError(response: Response): Promise<PlatformApiError> {
   }
 
   if (response.status === 401) {
-    detail = `${detail} Sign out and sign in again, then confirm SUPABASE_JWT_SECRET on Render matches Supabase → Project Settings → API → JWT Secret.`;
+    detail = `${detail} Sign out and sign in again to refresh your session.`;
   }
 
   return new PlatformApiError(response.status, detail);

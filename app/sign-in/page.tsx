@@ -193,14 +193,6 @@ function SignInForm() {
         >
           Continue with Google
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={() => signInWithOAuth("github")}
-        >
-          Continue with GitHub
-        </Button>
       </div>
       <button
         type="button"
