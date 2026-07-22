@@ -15,6 +15,8 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { LogoutButton } from "@/components/layout/logout-button";
 
 const PRIMARY = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -120,6 +122,11 @@ export function AppSidebar() {
           </div>
         </div>
       </nav>
+
+      <div className="space-y-1 border-t border-border p-3">
+        <ThemeToggle showLabel className="w-full justify-start" />
+        <LogoutButton />
+      </div>
     </div>
   );
 

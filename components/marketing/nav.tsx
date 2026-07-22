@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 
 const NAV = [
   { href: "/#product", label: "Product" },
-  { href: "/#architecture", label: "Architecture" },
+  { href: "/architecture", label: "Architecture" },
+  { href: "/#docs", label: "Docs" },
   { href: SITE.githubUrl, label: "GitHub", external: true },
 ];
 
@@ -14,13 +15,10 @@ export function MarketingNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex items-baseline gap-1.5">
-          <span className="text-sm font-semibold tracking-tight">{SITE.name}</span>
-          <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
-            observability
-          </span>
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          {SITE.name}
         </Link>
-        <nav className="hidden items-center gap-4 text-sm text-muted-foreground md:flex">
+        <nav className="hidden items-center gap-5 text-sm text-muted-foreground md:flex">
           {NAV.map((item) =>
             item.external ? (
               <a
@@ -28,7 +26,7 @@ export function MarketingNav() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-foreground"
+                className="transition-colors duration-150 hover:text-foreground"
               >
                 {item.label}
               </a>
@@ -36,7 +34,7 @@ export function MarketingNav() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="hover:text-foreground"
+                className="transition-colors duration-150 hover:text-foreground"
               >
                 {item.label}
               </Link>

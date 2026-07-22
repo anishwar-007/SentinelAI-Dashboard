@@ -78,7 +78,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Auth model
 
-1. User signs in via Supabase (email/password or GitHub OAuth when enabled).
+1. User signs in via Supabase (email/password, Google, or GitHub OAuth when enabled).
 2. Session cookies are managed by `@supabase/ssr` middleware.
 3. Protected Platform calls attach `Authorization: Bearer <access_token>`.
 4. Platform `require_user` validates the JWT — security is **not** frontend-only.
@@ -87,8 +87,9 @@ OAuth callback: `/auth/callback` exchanges the code for a session, then redirect
 
 ### Remaining ops
 
-- Enable the GitHub provider in the Supabase dashboard if you want GitHub sign-in.
-- Add `https://<your-app>/auth/callback` to Supabase Auth redirect URLs.
+- Enable the Google and/or GitHub providers in the Supabase dashboard (Authentication → Providers).
+- For Google: create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials), then paste the Client ID and Client Secret into Supabase.
+- Add `http://localhost:3000/auth/callback` and `https://<your-app>/auth/callback` to Supabase Auth redirect URLs.
 
 ## APIs consumed
 

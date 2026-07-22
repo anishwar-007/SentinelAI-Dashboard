@@ -76,7 +76,7 @@ export default function SandboxPage() {
               className={cn(
                 "rounded-md border px-3 py-1.5 text-xs font-medium",
                 mode === m.id
-                  ? "border-sky-500/50 bg-sky-500/10 text-foreground"
+                  ? "border-accent/40 bg-accent-muted text-foreground"
                   : "border-border text-muted-foreground hover:text-foreground",
               )}
               onClick={() => {

@@ -7,6 +7,7 @@ import {
   flattenSpanForest,
   spanOffsetPercent,
 } from "@/lib/trace-tree";
+import { inferSpanKind, spanKindAccent } from "@/lib/span-style";
 import type { ExecutionTraceView, SpanView } from "@/types/trace";
 
 export function TraceWaterfall({
@@ -36,48 +37,80 @@ export function TraceWaterfall({
           1,
         );
 
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+
   return (
-    <div className="space-y-2 rounded-md border border-border p-3">
-      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>Waterfall</span>
-        <span>Total {formatLatency(totalMs)}</span>
+    <div className="rounded-md border border-border bg-card/40">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          Timing
+        </span>
+        <span className="font-mono text-[11px] text-muted-foreground">
+          Total {formatLatency(totalMs)}
+        </span>
       </div>
-      <div className="space-y-1.5">
-        {rows.map((span) => {
-          const { left, width } = spanOffsetPercent(span, traceStart, totalMs);
-          const errored = span.status === "error";
-          return (
-            <button
-              type="button"
-              key={span.span_id}
-              className={cn(
-                "grid w-full grid-cols-[160px_1fr_72px] items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-muted/40",
-                selectedId === span.span_id && "bg-muted/50",
-              )}
-              onClick={() => onSelect(span)}
-            >
+
+      <div className="overflow-x-auto p-3">
+        <div className="mb-2 grid grid-cols-[minmax(140px,200px)_1fr_72px] gap-2 pl-1 text-[10px] text-muted-foreground">
+          <span>Span</span>
+          <div className="relative h-4">
+            {ticks.map((t) => (
               <span
-                className="truncate font-mono text-[11px] text-foreground"
-                style={{ paddingLeft: span.depth * 10 }}
-                title={span.name}
+                key={t}
+                className="absolute top-0 font-mono"
+                style={{ left: `${t * 100}%`, transform: "translateX(-50%)" }}
               >
-                {span.name}
+                {formatLatency(totalMs * t)}
               </span>
-              <div className="relative h-4 overflow-hidden rounded bg-muted/40">
-                <div
-                  className={cn(
-                    "absolute inset-y-0 rounded",
-                    errored ? "bg-red-500/80" : "bg-sky-500/70",
-                  )}
-                  style={{ left: `${left}%`, width: `${width}%` }}
-                />
-              </div>
-              <span className="text-right font-mono text-[11px] text-muted-foreground">
-                {formatLatency(span.latency_ms)}
-              </span>
-            </button>
-          );
-        })}
+            ))}
+          </div>
+          <span className="text-right">Duration</span>
+        </div>
+
+        <div className="space-y-1">
+          {rows.map((span) => {
+            const { left, width } = spanOffsetPercent(span, traceStart, totalMs);
+            const errored = span.status === "error";
+            const accent = spanKindAccent(inferSpanKind(span));
+            const selected = selectedId === span.span_id;
+
+            return (
+              <button
+                type="button"
+                key={span.span_id}
+                className={cn(
+                  "grid w-full min-w-[480px] grid-cols-[minmax(140px,200px)_1fr_72px] items-center gap-2 rounded-md px-1 py-1 text-left transition-colors duration-150 hover:bg-muted/50",
+                  selected && "bg-accent-muted/60",
+                )}
+                onClick={() => onSelect(span)}
+              >
+                <span
+                  className="truncate font-mono text-[11px] text-foreground"
+                  style={{ paddingLeft: span.depth * 12 }}
+                  title={span.name}
+                >
+                  {span.depth > 0 ? (
+                    <span className="mr-1 text-muted-foreground">└</span>
+                  ) : null}
+                  {span.name}
+                </span>
+                <div className="relative h-5 overflow-hidden rounded-sm bg-muted/50">
+                  <div
+                    className={cn(
+                      "absolute inset-y-0.5 rounded-sm transition-[opacity,box-shadow] duration-150",
+                      errored ? "bg-error/80" : accent.bar,
+                      selected && "ring-1 ring-accent",
+                    )}
+                    style={{ left: `${left}%`, width: `${Math.max(width, 0.8)}%` }}
+                  />
+                </div>
+                <span className="text-right font-mono text-[11px] text-muted-foreground">
+                  {formatLatency(span.latency_ms)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

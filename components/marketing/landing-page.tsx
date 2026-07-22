@@ -1,31 +1,70 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { Button } from "@/components/ui/button";
-import { ExecutionStatusBadge } from "@/components/executions/status-badge";
+import { TraceGraph } from "@/components/traces/trace-graph";
+import { SpanInspector } from "@/components/traces/span-inspector";
+import { ClientOnly } from "@/components/shared/client-only";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DEMO_LANDING_SPANS } from "@/lib/demo-landing-trace";
+import type { SpanView } from "@/types/trace";
 
-const DEMO_NODES = [
-  { name: "User Query", status: "ok", latency: "—", detail: "refund window?" },
-  { name: "Planner", status: "ok", latency: "120 ms", detail: "intent: retrieval" },
-  { name: "Retriever", status: "ok", latency: "45 ms", detail: "3 chunks" },
-  { name: "LLM", status: "ok", latency: "890 ms", detail: "gpt-oss-20b" },
-  { name: "Verifier", status: "ok", latency: "210 ms", detail: "approved" },
+const CAPABILITIES = [
+  {
+    title: "Trace",
+    body: "Visualize every step.",
+  },
+  {
+    title: "Debug",
+    body: "Inspect inputs, outputs, latency and failures.",
+  },
+  {
+    title: "Understand",
+    body: "Surface verification and root-cause signals.",
+  },
+  {
+    title: "Improve",
+    body: "Compare executions and eventually replay or evaluate changes.",
+  },
+];
+
+const PRODUCT_STEPS = [
+  {
+    title: "Instrument",
+    detail: "Annotate executions and spans in your app.",
+  },
+  {
+    title: "Observe",
+    detail: "Trace · Debug · Evaluate · Replay",
+  },
+  {
+    title: "Improve",
+    detail: "Find latency, failures, and root causes.",
+  },
 ];
 
 export function LandingPage() {
+  const [selected, setSelected] = useState<SpanView | null>(null);
+  const parentName = selected?.parent_span_id
+    ? DEMO_LANDING_SPANS.find((s) => s.span_id === selected.parent_span_id)
+        ?.name ?? null
+    : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-16 md:pt-24">
-        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          AI Execution Observability
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-4 pb-12 pt-14 md:pb-16 md:pt-20">
+        <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          {SITE.name}
         </p>
-        <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-5xl">
+        <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
           {SITE.tagline}
         </h1>
-        <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-          Trace, understand, and debug every AI execution — from prompts and
-          retrieval to tools, models, verification, and failures.
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
+          Trace, debug, and understand AI executions — so engineers can see what
+          happened, where it failed, and what took the most time.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild size="lg">
@@ -39,134 +78,123 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section id="product" className="border-y border-border bg-card/30 py-14">
+      {/* Interactive execution visualization */}
+      <section id="product" className="border-y border-border bg-card/40 py-12">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Interactive execution visualization
           </h2>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            SentinelAI captures a hierarchical execution graph — the same shape
-            you inspect in the dashboard Trace Graph.
+            A real parent/child execution graph — the same model you inspect in
+            the dashboard. Click a node to open the inspector.
           </p>
-          <div className="mt-8 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:gap-0">
-            {DEMO_NODES.map((node, idx) => (
-              <div key={node.name} className="flex flex-1 items-center gap-2 md:flex-col">
-                <div className="w-full rounded-md border border-border bg-background p-3 md:min-h-[110px]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-medium">{node.name}</span>
-                    <ExecutionStatusBadge status={node.status} />
-                  </div>
-                  <p className="mt-2 text-[11px] text-muted-foreground">
-                    {node.latency}
-                  </p>
-                  <p className="mt-1 truncate font-mono text-[11px] text-foreground/80">
-                    {node.detail}
-                  </p>
-                </div>
-                {idx < DEMO_NODES.length - 1 ? (
-                  <div className="hidden h-px w-4 bg-border md:block" />
-                ) : null}
-                {idx < DEMO_NODES.length - 1 ? (
-                  <div className="h-4 w-px bg-border md:hidden" />
-                ) : null}
+          <div className="mt-6 overflow-x-auto">
+            <ClientOnly fallback={<Skeleton className="h-[420px] w-full" />}>
+              <TraceGraph
+                spans={DEMO_LANDING_SPANS}
+                selectedId={selected?.span_id}
+                onSelect={setSelected}
+                heightClass="h-[420px] min-w-[640px]"
+              />
+            </ClientOnly>
+          </div>
+          <SpanInspector
+            span={selected}
+            parentName={parentName}
+            open={Boolean(selected)}
+            onOpenChange={(open) => {
+              if (!open) setSelected(null);
+            }}
+          />
+        </div>
+      </section>
+
+      {/* Product story */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          How it works
+        </h2>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <StoryBox title="Your AI Application" subtle />
+          <ArrowDown />
+          <div className="w-full max-w-md rounded-md border border-border bg-card px-5 py-4 text-center">
+            <p className="text-sm font-semibold tracking-tight">{SITE.name}</p>
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Trace · Debug · Evaluate · Replay
+            </p>
+          </div>
+          <ArrowDown />
+          <StoryBox title="Execution Intelligence" subtle />
+        </div>
+
+        <div className="mt-10 grid gap-3 sm:grid-cols-3">
+          {PRODUCT_STEPS.map((step, i) => (
+            <div
+              key={step.title}
+              className="rounded-md border border-border px-4 py-3"
+            >
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                {String(i + 1).padStart(2, "0")} · {step.title}
+              </p>
+              <p className="mt-2 text-sm text-foreground">{step.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Capabilities */}
+      <section className="border-y border-border bg-card/30 py-12">
+        <div className="mx-auto max-w-6xl px-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Capabilities
+          </h2>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {CAPABILITIES.map((item) => (
+              <div key={item.title} className="border-l-2 border-accent/40 pl-3">
+                <h3 className="font-mono text-xs font-semibold uppercase tracking-wide text-foreground">
+                  {item.title}
+                </h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-14">
+      {/* SDK / Docs anchor */}
+      <section id="docs" className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Capabilities
+          SDK integration
         </h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              title: "Trace",
-              body: "Execution flow across planners, retrieval, model calls, tools, and verifiers — with parent/child span relationships.",
-            },
-            {
-              title: "Debug",
-              body: "Inspect inputs, outputs, tokens, latency, and failures at every span. Jump from waterfall timing to span payloads.",
-            },
-            {
-              title: "Understand",
-              body: "Surface verification outcomes and analysis when your runtime captures them — without locking SentinelAI to one agent framework.",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="rounded-md border border-border bg-card/40 p-4"
-            >
-              <h3 className="font-mono text-sm font-semibold">{card.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{card.body}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-6 text-sm text-muted-foreground">
-          Expose execution flow, prompts, retrieval, model calls, tools,
-          verification, latency, and failures — from any customer AI application
-          instrumented with the SentinelAI SDK.
+        <p className="mt-2 text-lg font-medium tracking-tight text-foreground">
+          Instrument in minutes.
         </p>
-      </section>
+        <pre className="mt-5 overflow-x-auto rounded-md border border-border bg-card px-4 py-4 font-mono text-[12px] leading-relaxed text-foreground/90">{`from sentinelai import execution, span
 
-      <section className="border-y border-border bg-card/20 py-14">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            SDK integration
-          </h2>
-          <pre className="mt-4 overflow-x-auto rounded-md border border-border bg-background p-4 font-mono text-[12px] leading-relaxed text-foreground/90">{`from sentinelai import configure, execution, span
-
-configure(publisher=stream, model_info=model_info)
-
-@execution("query")
+@execution("support-agent")
 async def run(query: str):
-    plan = await plan_query(query)
+    plan = await plan(query)
     return await answer(plan, query)
 
 @span("planner")
-async def plan_query(query: str):
+async def plan(query: str):
     ...
 `}</pre>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Annotate business methods. The Platform consumes the Execution Stream —
-            your app does not talk to the dashboard directly.
-          </p>
-        </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Annotate business methods. SentinelAI captures the execution graph
+          automatically.
+        </p>
       </section>
 
-      <section id="architecture" className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Architecture
-        </h2>
-        <div className="mt-6 flex flex-col gap-2 font-mono text-sm">
-          {[
-            "Customer AI Application",
-            "SentinelAI SDK",
-            "Execution Stream",
-            "SentinelAI Platform",
-            "Dashboard",
-          ].map((label, idx, arr) => (
-            <div key={label} className="flex flex-col items-center">
-              <div className="w-full max-w-md rounded-md border border-border bg-card/40 px-4 py-3 text-center">
-                {label}
-              </div>
-              {idx < arr.length - 1 ? (
-                <span className="py-1 text-muted-foreground">↓</span>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-card/30 py-16">
+      {/* Closing CTA */}
+      <section className="border-t border-border bg-card/40 py-14">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
             Your AI already runs.
             <br />
             Now understand what it&apos;s doing.
           </h2>
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mt-7 flex justify-center gap-3">
             <Button asChild size="lg">
               <Link href="/sandbox">Try Sandbox</Link>
             </Button>
@@ -179,5 +207,27 @@ async def plan_query(query: str):
         </div>
       </section>
     </div>
+  );
+}
+
+function StoryBox({ title, subtle }: { title: string; subtle?: boolean }) {
+  return (
+    <div
+      className={
+        subtle
+          ? "w-full max-w-sm rounded-md border border-dashed border-border px-4 py-3 text-center text-sm text-muted-foreground"
+          : "w-full max-w-md rounded-md border border-border bg-card px-4 py-3 text-center text-sm font-medium"
+      }
+    >
+      {title}
+    </div>
+  );
+}
+
+function ArrowDown() {
+  return (
+    <span className="font-mono text-sm text-muted-foreground" aria-hidden>
+      ↓
+    </span>
   );
 }

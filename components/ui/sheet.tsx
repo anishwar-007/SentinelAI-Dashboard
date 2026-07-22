@@ -16,10 +16,10 @@ export function SheetContent({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/60" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-foreground/20" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-border bg-card shadow-xl outline-none",
+          "fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-border bg-card outline-none sm:max-w-md",
           className,
         )}
         {...props}

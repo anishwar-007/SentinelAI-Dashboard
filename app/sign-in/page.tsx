@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Suspense, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MarketingNav } from "@/components/marketing/nav";
@@ -9,6 +9,20 @@ import { Input } from "@/components/ui/input";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { ErrorState } from "@/components/shared/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
+
+function oauthErrorFromLocation(): string | null {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash.replace(/^#/, "");
+  if (!hash) return null;
+  const params = new URLSearchParams(hash);
+  const description = params.get("error_description") ?? params.get("error");
+  if (!description) return null;
+  try {
+    return decodeURIComponent(description.replace(/\+/g, " "));
+  } catch {
+    return description;
+  }
+}
 
 export default function SignInPage() {
   return (
@@ -28,6 +42,7 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
   const configError = searchParams.get("error") === "auth_not_configured";
+  const queryError = searchParams.get("error_description") ?? searchParams.get("error");
 
   const configured = useMemo(() => {
     try {
@@ -40,8 +55,23 @@ function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    queryError && queryError !== "auth_not_configured" ? queryError : null,
+  );
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const hashError = oauthErrorFromLocation();
+    if (hashError) {
+      setError(hashError);
+      // Clear the hash so refresh doesn't keep re-showing a stale OAuth error.
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+  }, []);
 
   if (!configured || configError) {
     return (
@@ -87,7 +117,7 @@ function SignInForm() {
     }
   }
 
-  async function signInWithGitHub() {
+  async function signInWithOAuth(provider: "github" | "google") {
     setError(null);
     try {
       const supabase = createClient();
@@ -97,17 +127,18 @@ function SignInForm() {
         next.startsWith("/") ? next : "/dashboard",
       );
       const { error: err } = await supabase.auth.signInWithOAuth({
-        provider: "github",
+        provider,
         options: {
           redirectTo: redirectTo.toString(),
         },
       });
       if (err) throw err;
     } catch (err) {
+      const label = provider === "google" ? "Google" : "GitHub";
       setError(
         err instanceof Error
           ? err.message
-          : "GitHub sign-in failed. Ensure the GitHub provider is enabled in Supabase.",
+          : `${label} sign-in failed. Ensure the ${label} provider is enabled in Supabase.`,
       );
     }
   }
@@ -153,14 +184,24 @@ function SignInForm() {
               : "Create account"}
         </Button>
       </form>
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={signInWithGitHub}
-      >
-        Continue with GitHub
-      </Button>
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => signInWithOAuth("google")}
+        >
+          Continue with Google
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => signInWithOAuth("github")}
+        >
+          Continue with GitHub
+        </Button>
+      </div>
       <button
         type="button"
         className="w-full text-center text-xs text-muted-foreground hover:text-foreground"

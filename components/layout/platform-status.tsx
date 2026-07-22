@@ -21,10 +21,10 @@ export function PlatformStatus() {
         className={cn(
           "h-1.5 w-1.5 rounded-full",
           isLoading || isFetching
-            ? "bg-amber-400"
+            ? "bg-warning"
             : healthy
-              ? "bg-emerald-400"
-              : "bg-red-400",
+              ? "bg-success"
+              : "bg-error",
         )}
       />
       <span className="hidden sm:inline">{label}</span>

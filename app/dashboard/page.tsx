@@ -86,7 +86,7 @@ export default function OverviewPage() {
                 </h2>
                 <Link
                   href="/dashboard/executions"
-                  className="text-xs text-sky-400 hover:underline"
+                  className="text-xs text-accent hover:underline"
                 >
                   Open explorer
                 </Link>
@@ -120,7 +120,7 @@ export default function OverviewPage() {
                             String(payload?.[0]?.payload?.name ?? "")
                           }
                         />
-                        <Bar dataKey="latency" fill="#38bdf8" radius={2} />
+                        <Bar dataKey="latency" fill="var(--accent)" radius={2} />
                       </BarChart>
                     </ResponsiveContainer>
                   </ClientOnly>
