@@ -39,7 +39,11 @@ async function getAccessToken(): Promise<string | null> {
   try {
     const supabase = createClient();
     const { data } = await supabase.auth.getSession();
-    return data.session?.access_token ?? null;
+    if (data.session?.access_token) return data.session.access_token;
+
+    // Session cookie may exist but access token expired — refresh once.
+    const refreshed = await supabase.auth.refreshSession();
+    return refreshed.data.session?.access_token ?? null;
   } catch {
     return null;
   }
@@ -49,10 +53,16 @@ async function parseError(response: Response): Promise<PlatformApiError> {
   let detail = `Platform request failed (${response.status}).`;
   try {
     const body = (await response.json()) as PlatformErrorBody;
-    if (body?.detail) detail = body.detail;
+    if (typeof body?.detail === "string") detail = body.detail;
+    else if (body?.detail != null) detail = JSON.stringify(body.detail);
   } catch {
     // keep default
   }
+
+  if (response.status === 401) {
+    detail = `${detail} Sign out and sign in again, then confirm SUPABASE_JWT_SECRET on Render matches Supabase → Project Settings → API → JWT Secret.`;
+  }
+
   return new PlatformApiError(response.status, detail);
 }
 
